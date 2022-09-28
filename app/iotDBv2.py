@@ -115,6 +115,25 @@ def insert_record(database, data):
     conn.commit()
     cur.close()
     conn.close()
+
+
+# select_latest(database, num, mode): select the latest N records
+# parameters: 
+#   database: string, name of the database
+#   num: integer, the number of records to be selected
+#   mode: integer, 0 for named, other for unnamed
+def select_latest(database, num, mode):
+    pass
+
+
+# select_range(database, start, end, mode)
+#  parameters:
+#   database: string, name of the database
+#   start: string, the start of the range
+#   end: string, the end of the range
+#   mode: integer, 0 for named, other for unnamed
+def select_range(database, start, end, mode):
+    pass
 # A simple test of functions, comment the next line to execute.
 '''
 database = "iotDB.db"
@@ -137,4 +156,5 @@ print(result, '\n', result2)
 with open('testdata.json','w',encoding='utf-8') as f:
     json.dump(result, f, ensure_ascii=False, indent=4)
 #'''
+
 
