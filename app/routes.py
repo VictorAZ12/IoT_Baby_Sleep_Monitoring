@@ -2,8 +2,7 @@ from app import app
 from app import iotDB
 from flask import render_template, redirect
 from datetime import datetime
-from app import test
-import time
+
 @app.route('/')
 @app.route('/index')
 def index():
@@ -26,6 +25,7 @@ def dashboard():
         "humidity": most_recent[0][4],
         "temperature": most_recent[0][5]
     }
+    print(data)
     return render_template('dashboard.html', data=data)
 
 @app.route('/update/<sound>/<movement>/<humidity>/<temperature>/<device_id>')
@@ -38,6 +38,7 @@ def update(sound, movement, humidity, temperature, device_id):
     iotDB.insert_record('iotDB.db', data)
     return redirect("/dashboard")
 
+'''
 @app.route('/generate/<N>')
 def generate(N):
     """
@@ -48,4 +49,4 @@ def generate(N):
         test.generate_record()
         time.sleep(5)
     return redirect("/dashboard")
-
+'''

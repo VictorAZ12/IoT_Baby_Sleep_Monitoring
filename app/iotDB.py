@@ -124,7 +124,7 @@ def insert_record(database, data):
 #   num: integer, the number of records to be selected
 #   mode: integer, 0 for named, other for unnamed
 def select_latest(database, num, mode):
-    query = "SELECT * FROM record ORDER BY time LIMIT " + str(num)
+    query = "SELECT * FROM record ORDER BY time DESC LIMIT " + str(num)
     if mode == 0:
         return select_named(database, query)
     else: 
