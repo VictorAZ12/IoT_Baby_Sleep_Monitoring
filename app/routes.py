@@ -2,7 +2,6 @@ from app import app
 from app import iotDB
 from flask import render_template, redirect
 from datetime import datetime
-from app.config import TIMEZONE
 
 @app.route('/')
 @app.route('/index')
@@ -18,14 +17,15 @@ def dashboard():
     """
     Displays the most recent data.
     """
-    most_recent = iotDB.selectRecord('iotDB.db', 'SELECT time, sound, movement, humidity, temperature, device_id FROM record ORDER BY time DESC LIMIT 1')
+    most_recent = iotDB.select_latest('iotDB.db',1,1) # select the latest 1 record without column names
     data = {
-        "time": most_recent[0][0],
-        "sound": most_recent[0][1],
-        "movement": most_recent[0][2],
-        "humidity": most_recent[0][3],
-        "temperature": most_recent[0][4]
+        "time": most_recent[0][1],
+        "sound": most_recent[0][2],
+        "movement": most_recent[0][3],
+        "humidity": most_recent[0][4],
+        "temperature": most_recent[0][5]
     }
+    print(data)
     return render_template('dashboard.html', data=data)
 
 @app.route('/update/<sound>/<movement>/<humidity>/<temperature>/<device_id>')
@@ -34,7 +34,19 @@ def update(sound, movement, humidity, temperature, device_id):
     Updates 'record' table with a new data point and redirects to dashboard.
     e.g 127.0.0.1:5000/update/50/1/80/20/1
     """
-    timestamp = datetime.now(tz=TIMEZONE)
-    data = [(None, timestamp, sound, movement, humidity, temperature, device_id)]
-    iotDB.insertRecords('iotDB.db', data)
+    data = [(sound, movement, humidity, temperature, device_id)]
+    iotDB.insert_record('iotDB.db', data)
     return redirect("/dashboard")
+
+'''
+@app.route('/generate/<N>')
+def generate(N):
+    """
+    Generates N data records with 5s intervals.
+    e.g 127.0.0.1:5000/generate/20
+    """
+    for i in range(int(N)):
+        test.generate_record()
+        time.sleep(5)
+    return redirect("/dashboard")
+'''
