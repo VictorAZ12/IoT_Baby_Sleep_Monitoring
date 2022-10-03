@@ -7,10 +7,10 @@ from datetime import datetime
 @app.route('/index')
 def index():
     """
-    Displays a welcome message.
+    Displays a welcome message and button to navigate to the dashboard.
     """
     message = 'Welcome to Baby Sleep Monitor'
-    return render_template('index.html', message=message)
+    return render_template('index.html')
 
 @app.route('/dashboard')
 def dashboard():
