@@ -130,11 +130,44 @@ def select_range(database, start, end, mode):
     else:
         return select_unnamed(database, query)
 
-def analyse_recent(database, n):
+def analyse_recent(database, n, sensitivity = 3):
     """
-    (incomplete)Analyse n latest records and returns a message derived from analysis.
+    Analyse n latest records and returns a message derived from the data.
+    sensitivity: define k consecutive sound/movement event to be noticed.
     """
-    pass
+    n = int(n)
+    numRows = select_unnamed(database,"SELECT COUNT(*) FROM  record",True)[0]
+    if n > numRows:
+        n = numRows
+    data = select_latest(database,n,1)
+    message = ''
+    apparentTemp = []
+    sound = ''
+    movement = ''
+    for i in range(len(data)):
+        # record sound, movement
+        sound = sound + str(data[i][2])
+        movement = sound + str(data[i][3])
+        # calculate apparent temperature
+        apparentTemp.append(mpcalc.apparent_temperature(data[i][5] * units.degC,
+        data[i][4]/100 * units.percent, 
+        0*units('m/s'),
+        face_level_winds = True,
+        mask_undefined = False))
+    # get sound/movement anomaly
+    soundEventIndex = sound.find('1'*sensitivity)
+    movementEventIndex = movement.find('1'*sensitivity)
+    if soundEventIndex != -1:
+        message = message + 'Sound event detected from ' + str(data[soundEventIndex+sensitivity-1][1]) + ' to ' + str(data[soundEventIndex][1]) + '\n'
+    if movementEventIndex != -1:
+        message = message + 'Movement event detected from ' + str(data[movementEventIndex+sensitivity-1][1]) + ' to ' + str(data[movementEventIndex][1]) + '\n'
+    # get the latest temperature anomaly
+    for i in range(len(apparentTemp)):
+        if apparentTemp[i].magnitude[0] > 22 or apparentTemp[i].magnitude[0] < 18:
+            message = message + 'Uncomfortable temperature detected at ' + str(data[i][1]) + \
+            ', temperature ' + str(data[i][5]) + ' degrees celcius, humidity ' + str(round(data[i][4], 2)) + \
+            '%, feels like ' + str(round(apparentTemp[i].magnitude[0],2)) + ' degrees celcius.\n'
+    return message
 
 # sample json dumping
 '''
