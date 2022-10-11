@@ -2,8 +2,10 @@ import sqlite3
 import os
 import json
 import datetime
-from app.config import TIMEZONE
-import metpy
+#from app.config import TIMEZONE
+import metpy.calc as mpcalc
+from metpy.units import units
+
 def init_db(database):
     """
     Creates a SQLite3 database named after the argument database.
@@ -124,26 +126,57 @@ def select_range(database, start, end, mode):
     mode: 0 for named result, other values for unnmaed result.
     start/end: start and end of the interval.
     """
-    query = "SELECT * FROM record WHERE time < " + start + " AND time > " + end
+    start = '\"' + start + '\"'
+    end = '\"' + end + '\"'
+    query = 'SELECT * FROM record WHERE time BETWEEN ' + start + " AND " + end + "ORDER BY time DESC"
     if mode == 0:
         return select_named(database, query)
     else:
         return select_unnamed(database, query)
 
+def longest_1(record):
+    """
+    Analyse a 0/1 string to find the longest substring composed of 1, returns the start index and the length.
+    """
+    if (record == None or len(record)==0):
+        return 0, 0
+    start = 0
+    end = 0
+    maxLen = 0
+    maxIndex = -1
+    while end < len(record):
+        if record[start] == '1' and record[end] == '1':
+            all1 = True
+            for i in range(start,end+1):
+                if record[i] != '1':
+                    all1 = False
+                    break
+            if all1:
+                maxLen = end-start+1
+                maxIndex = start
+            else:
+                start += 1
+        else:
+            start += 1
+        end += 1
+    return maxLen, maxIndex
+
 def analyse_recent(database, n, sensitivity = 3):
     """
     Analyse n latest records and returns a message derived from the data.
     sensitivity: define k consecutive sound/movement event to be noticed.
+    may also find the longest substring 1s
     """
-    n = int(n)
     numRows = select_unnamed(database,"SELECT COUNT(*) FROM  record",True)[0]
     if n > numRows:
         n = numRows
     data = select_latest(database,n,1)
     message = ''
+    messages = []
     apparentTemp = []
     sound = ''
     movement = ''
+    apparentTempStatus = ''
     for i in range(len(data)):
         # record sound, movement
         sound = sound + str(data[i][2])
@@ -158,21 +191,38 @@ def analyse_recent(database, n, sensitivity = 3):
     soundEventIndex = sound.find('1'*sensitivity)
     movementEventIndex = movement.find('1'*sensitivity)
     if soundEventIndex != -1:
-        message = message + 'Sound event detected from ' + str(data[soundEventIndex+sensitivity-1][1]) + ' to ' + str(data[soundEventIndex][1]) + '\n'
+        message = 'Sound event detected from ' + str(data[soundEventIndex+sensitivity-1][1]) + ' to ' + str(data[soundEventIndex][1]) + '\n'
+        messages.append(message)
+        soundLen, soundIndex = longest_1(sound)
+        message = 'Longest sound event detected from ' + str(data[soundIndex+soundLen-1][1]) + ' to ' + str(data[soundIndex][1]) + '\n'
+        messages.append(message)
     if movementEventIndex != -1:
-        message = message + 'Movement event detected from ' + str(data[movementEventIndex+sensitivity-1][1]) + ' to ' + str(data[movementEventIndex][1]) + '\n'
+        message = 'Movement event detected from ' + str(data[movementEventIndex+sensitivity-1][1]) + ' to ' + str(data[movementEventIndex][1]) + '\n'
+        messages.append(message)
+        moveLen, moveIndex = longest_1(movement)
+        message = 'Longest movement event detected from ' + str(data[moveIndex+moveLen-1][1]) + ' to ' + str(data[moveIndex][1]) + '\n'
+        messages.append(message)
     # get the latest temperature anomaly
     for i in range(len(apparentTemp)):
         if apparentTemp[i].magnitude[0] > 22 or apparentTemp[i].magnitude[0] < 18:
-            message = message + 'Uncomfortable temperature detected at ' + str(data[i][1]) + \
+            message = 'Uncomfortable temperature detected at ' + str(data[i][1]) + \
             ', temperature ' + str(data[i][5]) + ' degrees celcius, humidity ' + str(round(data[i][4], 2)) + \
             '%, feels like ' + str(round(apparentTemp[i].magnitude[0],2)) + ' degrees celcius.\n'
-    return message
+            messages.append(message)
+            apparentTempStatus = apparentTempStatus + '1'
+        else:
+            apparentTempStatus = apparentTempStatus + '0'
+    apparentTempIndex = apparentTempStatus.find('1'*sensitivity)
+    if apparentTempIndex != -1:
+        message = 'Uncomfortable temperature detected from ' + str(data[apparentTempIndex+sensitivity-1][1]) + ' to ' + str(data[apparentTempIndex][1]) + '\n'
+        messages.insert(0,message)
+        tempLen, tempIndex = longest_1(apparentTempStatus)
+        message = 'Longest uncomfortable temperature inteval detected from ' + str(data[tempIndex+tempLen-1][1]) + ' to ' + str(data[tempIndex][1]) + '\n'
+        messages.insert(1,message)
+    return messages
 
 # sample json dumping
 '''
 with open('testdata.json','w',encoding='utf-8') as f:
     json.dump(result, f, ensure_ascii=False, indent=4)
 #'''
-
-
