@@ -1,4 +1,7 @@
 from flask import Flask
+import mimetypes
+mimetypes.add_type('text/css', '.css')
+mimetypes.add_type('application/javascript', '.js')
 
 app = Flask(__name__)
 

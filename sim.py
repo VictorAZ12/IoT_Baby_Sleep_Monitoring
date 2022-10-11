@@ -14,7 +14,7 @@ def request():
             str(random.randint(0,1)) + "/" +\
             str(random.randrange(20,80)) + "/" +\
             str(random.randrange(0,50)) + "/" +\
-            "test" 
+            "1" 
     requests.get(url)
     return url
 

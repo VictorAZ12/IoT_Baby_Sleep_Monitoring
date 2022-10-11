@@ -125,7 +125,9 @@ def select_range(database, start, end, mode):
     mode: 0 for named result, other values for unnmaed result.
     start/end: start and end of the interval.
     """
-    query = "SELECT * FROM record WHERE time < " + start + " AND time > " + end
+    start = '\"' + start + '\"'
+    end = '\"' + end + '\"'
+    query = "SELECT * FROM record WHERE time BETWEEN " + start + " AND " + end + " ORDER BY time DESC"
     if mode == 0:
         return select_named(database, query)
     else:
