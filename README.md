@@ -18,6 +18,8 @@ Project members: Alex McGuckin (22703095), Finn Murphy (22237879), Ronjon Kundu 
 
 4. Install the packages from the requirements.txt file with the following command: `pip install -r requirements.txt`
 
+5. Install the flask_cors with the following command: `pip3 install flask_cors`
+
 ## Run the app
 
 1. Make sure your current directory is the project repository and that your virtual environment is active. 
