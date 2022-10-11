@@ -24,7 +24,7 @@ def init_db(database):
         cur.execute("""CREATE TABLE IF NOT EXISTS device
         (
             device_id INTEGER PRIMARY KEY NOT NULL,
-            device_mac TEXT UNIQUE NOT NULL,
+            device_name TEXT UNIQUE NOT NULL,
             owner INTEGER NULL,
             FOREIGN KEY (owner)
                 REFERENCES user (user_id)
@@ -81,7 +81,7 @@ def select_named(database, query, one=False):
 def insert_record(database, data):
     """
     Insert new record data into the database. 
-    data: tuple(s) like (sound, movement, humidity, temperature, deviceMAC)
+    data: tuple(s) like (sound, movement, humidity, temperature, devicename)
     Argument data example:
         single record: [(1, 0, 12.3, 20.2,'F8-A2-D6-AA-94-E3')]
         multiple records: [(1, 0, 12.3, 20.2,'F8-A2-D6-AA-94-E3'), (1, 0, 15.3, 20.2,'F8-A2-D6-AA-94-E3')]
@@ -91,11 +91,11 @@ def insert_record(database, data):
     for i in range(len(data)):
         print(data[i])
         record = list(data[i])
-        # add MAC to device table if it does not exist
+        # add name to device table if it does not exist
         cur.execute("INSERT OR IGNORE INTO device VALUES (?, ?, ?)", (None, record[4], None))
         conn.commit()
-        # retrieve device_id based on mac
-        cur.execute("SELECT device_id FROM device WHERE device_mac = '%s'" % record[4])
+        # retrieve device_id based on name
+        cur.execute("SELECT device_id FROM device WHERE device_name = '%s'" % record[4])
         device_id=cur.fetchall()
         record[4] = device_id[0][0]
         # add system time
@@ -133,6 +133,7 @@ def select_range(database, start, end, mode):
         return select_named(database, query)
     else:
         return select_unnamed(database, query)
+
 
 def longest_1(record):
     """
@@ -220,6 +221,19 @@ def analyse_recent(database, n, sensitivity = 3):
         message = 'Longest uncomfortable temperature inteval detected from ' + str(data[tempIndex+tempLen-1][1]) + ' to ' + str(data[tempIndex][1]) + '\n'
         messages.insert(1,message)
     return messages
+
+
+def format_raw(rawdata):
+    """
+    Format the raw data received from the device.
+    Rawdata: a string like "<name>,<temp>,<humidity>,<sound>,<movement>"
+    Returns a list of a tuple like (sound, movement, humidity, temperature, deviceName)
+    """
+    rawdata = rawdata.split(',')
+    data = [(int(rawdata[3]), int(rawdata[4]), float(rawdata[2]), float(rawdata[1]), rawdata[0])]
+    return data
+
+
 
 # sample json dumping
 '''
