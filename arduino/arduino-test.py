@@ -17,24 +17,24 @@ logging = open('logging.csv',mode='a')                  # CSV file that will be 
 # Description of the successful bind is written to the first entry box of the GUI
 
 def initialize(event):
-	entry1.insert (0,'Socket created')
+    entry1.insert (0,'Socket created')
 	
-	try:
-	   s.bind((HOST, PORT))
-	except socket.error as msg:
-	   entry1.insert(tk.END,str(msg))
-	   sys.exit()
-   
-	entry1.insert(tk.END,' - Socket bind complete ')
-	data = s.getsockname()
-	entry1.insert(tk.END,data[0] + ":" +str(data[1]))
+    try:
+        s.bind((HOST, PORT))
+    except socket.error as msg:
+        entry1.insert(tk.END,str(msg))
+        sys.exit()
+
+    entry1.insert(tk.END,' - Socket bind complete ')
+    data = s.getsockname()
+    entry1.insert(tk.END,data[0] + ":" +str(data[1]))
 
 # This routine starts a seperate thread that will listen for socket connection requests and returns to the GUI
 	
 def connect(event):
-        y = threading.Thread(target=socket_listening,)
-        y.daemon = True #By setting Daemon to true, this thread will exit when the main program exits
-        y.start()
+    y = threading.Thread(target=socket_listening,)
+    y.daemon = True #By setting Daemon to true, this thread will exit when the main program exits
+    y.start()
         
 # This routine listens for socket requests and connects
 # Because s.listen is a blocking command, it is housed in its own thread and will not block other threads from running
@@ -42,16 +42,16 @@ def connect(event):
 # Comment out print statements if required           
 
 def socket_listening():
-	text1.insert(tk.END,'Socket now listening\n')
-	s.listen(4)
-	for index in range(4):
-	  conn, addr = s.accept()
-	  connection = 'Connected with ' + addr[0] + ':' + str(addr[1]) + '\n'
-	  print('connection ',addr)
-	  text1.insert(tk.END,connection)
-	  print('connect complete')
-	  x = threading.Thread(target=client_thread, args=(conn, addr, PORT,))
-	  x.start()
+    text1.insert(tk.END,'Socket now listening\n')
+    s.listen(4)
+    for index in range(4):
+        conn, addr = s.accept()
+        connection = 'Connected with ' + addr[0] + ':' + str(addr[1]) + '\n'
+        print('connection ',addr)
+        text1.insert(tk.END,connection)
+        print('connect complete')
+        x = threading.Thread(target=client_thread, args=(conn, addr, PORT,))
+        x.start()
 
 # This routine handles the connection and communication for a single Arduino
 # One thread will be instantiated for each socket connection request
@@ -60,41 +60,41 @@ def socket_listening():
 # If the Arduino sends a "quit" string, the connection is closed and the thread exits (Arduino code currently doesn't do this)
 	
 def client_thread(connection, ip, port, max_buffer_size = 1024):
-        print(threading.current_thread().name)
-        print(ip)
-        sendString = "Send a Reading"
-        delayStart = time.perf_counter()
-        print(sendString)  
-        logging_writer = csv.writer(logging, quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        is_active = True
-        receiveBytes = " "
-        while is_active:
-           if ((time.perf_counter() - delayStart) >= period):           # Change period value a top of file
-             delayStart = time.perf_counter()
-             connection.send(sendString.encode("utf-8"))                # Send only takes string
-             receiveBytes = connection.recv(max_buffer_size)
-             receiveString = receiveBytes.decode("utf-8")
-             li = list(receiveString.split(","))                        # Data is comma separated
-             li.append(time.ctime())                                    # Append time stamp to the list
-             print(receiveString)
-             print(li)
-             sensorLock.acquire()
-             logging_writer.writerow(li)                                # Write received data to logging file
-             sensorLock.release()             
+    print(threading.current_thread().name)
+    print(ip)
+    sendString = "Send a Reading"
+    delayStart = time.perf_counter()
+    print(sendString)  
+    logging_writer = csv.writer(logging, quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    is_active = True
+    receiveBytes = " "
+    while is_active:
+        if ((time.perf_counter() - delayStart) >= period):           # Change period value a top of file
+            delayStart = time.perf_counter()
+            connection.send(sendString.encode("utf-8"))                # Send only takes string
+            receiveBytes = connection.recv(max_buffer_size)
+            receiveString = receiveBytes.decode("utf-8")
+            li = list(receiveString.split(","))                        # Data is comma separated
+            li.append(time.ctime())                                    # Append time stamp to the list
+            print(receiveString)
+            print(li)
+            sensorLock.acquire()
+            logging_writer.writerow(li)                                # Write received data to logging file
+            sensorLock.release()             
              
-           if b"quit" == receiveBytes: # If the Arduino sends a "quit" string, connection is closed and thread exits
-             connection.close()             
-             print("Connection " + ip[0] + ":" + str(ip[1]) + " closed")
-             text1.insert(tk.END,"Connection " + ip[0] + ":" + str(ip[1]) + " closed" + "\n")
-             is_active = False
+        if b"quit" == receiveBytes: # If the Arduino sends a "quit" string, connection is closed and thread exits
+            connection.close()             
+            print("Connection " + ip[0] + ":" + str(ip[1]) + " closed")
+            text1.insert(tk.END,"Connection " + ip[0] + ":" + str(ip[1]) + " closed" + "\n")
+            is_active = False
 
 # This routine closes the logging file, socket and exits the program
 
 def exit(event):        
-        logging.close()
-        s.close()
-        print('exit')
-        window.destroy()
+    logging.close()
+    s.close()
+    print('exit')
+    window.destroy()
 
 # The GUI is defined here using tkinter commands
 
