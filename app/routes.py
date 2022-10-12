@@ -4,6 +4,7 @@ from flask import render_template, redirect, jsonify
 from datetime import datetime
 from datetime import timedelta
 from app.config import TIMEZONE
+from app.config import DEVICES
 
 @app.route('/')
 @app.route('/index')
@@ -26,6 +27,20 @@ def dashboard():
         "humidity": records[0][4],
         "temperature": records[0][5]
     }
+    '''
+    records = iotDB.select_latest('iotDB.db', 10, 1)
+    data = []
+    for record in records:
+        data.append(
+            {
+                "time": record[1],
+                "sound": record[2],
+                "movement": record[3],
+                "humidity": record[4],
+                "temperature": record[5]
+            }
+        )
+    '''
     return jsonify(data)
 
 @app.route('/update/<sound>/<movement>/<humidity>/<temperature>/<device_id>')
@@ -34,9 +49,43 @@ def update(sound, movement, humidity, temperature, device_id):
     Updates 'record' table with a new data point and redirects to dashboard.
     e.g 127.0.0.1:5000/update/50/1/80/20/1
     """
-    data = [(sound, movement, humidity, temperature, device_id)]
-    iotDB.insert_record('iotDB.db', data)
-    return redirect("/dashboard")
+    if device_id in DEVICES:
+        data = [(sound, movement, humidity, temperature, device_id)]
+        iotDB.insert_record('iotDB.db', data)
+        return redirect("/dashboard")
+    else:
+        return render_template('rejection.html')
+
+@app.route('/report/<start>/<length>')
+def report(start, length):
+    now = datetime.now(tz=TIMEZONE)
+    begin = now - timedelta(hours=int(start))
+    stop = begin + timedelta(hours=int(length))
+    begin = begin.strftime("%Y-%m-%d %H:%M:%S.%f")
+    stop = stop.strftime("%Y-%m-%d %H:%M:%S.%f")
+    data = iotDB.select_range('iotDB.db', start=begin, end=stop, mode=1)
+    num_records = len(data)
+    messages = []
+    sound_count = 0
+    motion_count = 0
+    humidity_count = 0
+    temp_count = 0
+    for record in data:
+        if int(record[2]) == 1:
+            sound_count += 1 
+        if int(record[3]) == 1:
+            motion_count += 1
+        humidity_count += int(record[4])
+        temp_count += int(record[5])
+    sound_ratio = round(sound_count / num_records, 2)
+    messages.append(sound_ratio)
+    motion_ratio = round(motion_count / num_records, 2)
+    messages.append(motion_ratio)
+    average_humidity = int(humidity_count / num_records)
+    messages.append(average_humidity)
+    average_temp = int(temp_count / num_records)
+    messages.append(average_temp)
+    return render_template('report.html', data=data, dates=[begin[0:19], stop[0:19]], messages=messages)
 
 '''
 def dashboard():
