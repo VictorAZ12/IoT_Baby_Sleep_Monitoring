@@ -1,29 +1,17 @@
 import socket
 import tkinter as tk
 import threading
-
-# ----------------------------------------------------------------------------------------------------------------------------------------------------
-# import csv
-# ----------------------------------------------------------------------------------------------------------------------------------------------------
-
 import sys
 import time
-
-# ----------------------------------------------------------------------------------------------------------------------------------------------------
-from app import iotDB
-# ----------------------------------------------------------------------------------------------------------------------------------------------------
+import requests
 
 
 HOST = ''   # Symbolic name, meaning all available interfaces
 PORT = 9000 # Arbitrary non-privileged port
 period = 5  # Number of seconds between requested readings (+ a bit of lag)
 
-sensorLock = threading.Lock()                           # This lock is used to make sure that only one thread can write to the logging file at a time
+# sensorLock = threading.Lock()                           # This lock is used to make sure that only one thread can write to the logging file at a time
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)   # Set up the socket that will be used to connect ESP13
-
-# ----------------------------------------------------------------------------------------------------------------------------------------------------
-# logging = open('logging.csv',mode='a')                  # CSV file that will be used to log sensor data
-# ----------------------------------------------------------------------------------------------------------------------------------------------------
 
 # This routine initializes the socket using the host and port defined above
 # Description of the successful bind is written to the first entry box of the GUI
@@ -77,11 +65,6 @@ def client_thread(connection, ip, port, max_buffer_size = 1024):
     sendString = "Send a Reading"
     delayStart = time.perf_counter()
     print(sendString) 
-
-    # ----------------------------------------------------------------------------------------------------------------------------------------------------
-    # logging_writer = csv.writer(logging, quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    # ----------------------------------------------------------------------------------------------------------------------------------------------------
-
     is_active = True
     receiveBytes = " "
     while is_active:
@@ -94,16 +77,12 @@ def client_thread(connection, ip, port, max_buffer_size = 1024):
             li.append(time.ctime())                                    # Append time stamp to the list
             print(receiveString)
             print(li)
-            sensorLock.acquire()
 
-            # ----------------------------------------------------------------------------------------------------------------------------------------------------
-            # logging_writer.writerow(li)                                # Write received data to logging file
-            # ----------------------------------------------------------------------------------------------------------------------------------------------------
-            iotDB.format_raw(li)
-            # ----------------------------------------------------------------------------------------------------------------------------------------------------
+            # send http get requests to the flask server so the data can be stored in the database
+            # '/update/<sound>/<movement>/<humidity>/<temperature>/<device_name>'
+            url = "http://127.0.0.1:5000/update/" + li[0] + "/" + li[1] + "/" + li[2] + "/" + li[3] + "/" + li[4]
+            requests.get(url)
 
-            sensorLock.release()             
-             
         if b"quit" == receiveBytes: # If the Arduino sends a "quit" string, connection is closed and thread exits
             connection.close()             
             print("Connection " + ip[0] + ":" + str(ip[1]) + " closed")
@@ -113,11 +92,6 @@ def client_thread(connection, ip, port, max_buffer_size = 1024):
 # This routine closes the logging file, socket and exits the program
 
 def exit(event):   
-
-    # ----------------------------------------------------------------------------------------------------------------------------------------------------     
-    # logging.close()
-    # ----------------------------------------------------------------------------------------------------------------------------------------------------
-
     s.close()
     print('exit')
     window.destroy()
