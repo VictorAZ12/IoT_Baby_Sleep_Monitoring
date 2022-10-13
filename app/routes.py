@@ -47,7 +47,7 @@ def dashboard():
 def update(sound, movement, humidity, temperature, device_id):
     """
     Updates 'record' table with a new data point and redirects to dashboard.
-    e.g 127.0.0.1:5000/update/50/1/80/20/1
+    e.g 127.0.0.1:5000/update/50/1/80/20/Arduino1
     """
     if device_id in DEVICES:
         data = [(sound, movement, humidity, temperature, device_id)]
@@ -58,9 +58,18 @@ def update(sound, movement, humidity, temperature, device_id):
 
 @app.route('/report/<start>/<length>')
 def report(start, length):
+    """
+    Returns a page that displays useful information about the data over the selected period of time. 
+    @param start (str): determines the starting time for the reports data. e.g. if start is 10, then the report 
+      will use data starting from 10 hours ago.
+    @param length (str): the the number of hours of data the report should use, counting from the starting time. 
+
+    e.g. if its 8am in the morning, and I want a report of last nights data, then I would enter /report/11/9, 
+      meaning the report would start at 9pm last night, and go until 6am this morning. 
+    """
     now = datetime.now(tz=TIMEZONE)
-    begin = now - timedelta(hours=int(start))
-    stop = begin + timedelta(hours=int(length))
+    begin = now - timedelta(hours=float(start))
+    stop = begin + timedelta(hours=float(length))
     begin = begin.strftime("%Y-%m-%d %H:%M:%S.%f")
     stop = stop.strftime("%Y-%m-%d %H:%M:%S.%f")
     data = iotDB.select_range('iotDB.db', start=begin, end=stop, mode=1)
