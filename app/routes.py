@@ -56,19 +56,18 @@ def update(sound, movement, humidity, temperature, device_id):
     else:
         return render_template('rejection.html')
 
-@app.route('/report/<start>/<length>')
-def report(start, length):
+@app.route('/report/<yr>/<mon>/<day>/<hr>/<min>/<length>')
+def report(yr, mon, day, hr, min, length):
     """
     Returns a page that displays useful information about the data over the selected period of time. 
-    @param start (str): determines the starting time for the reports data. e.g. if start is 10, then the report 
-      will use data starting from 10 hours ago.
-    @param length (str): the the number of hours of data the report should use, counting from the starting time. 
-
-    e.g. if its 8am in the morning, and I want a report of last nights data, then I would enter /report/11/9, 
-      meaning the report would start at 9pm last night, and go until 6am this morning. 
+    @param yr (str): the year to start the report period.
+    @param mon (str): the month to start the report period.
+    @param day (str): the day to start the report period.
+    @param hr (str): the hour to start the repord period (24hr time)
+    @param min (str): the minute to start the report period.
+    @param length (str): the number of hours the report should last for.
     """
-    now = datetime.now(tz=TIMEZONE)
-    begin = now - timedelta(hours=float(start))
+    begin = datetime(year=int(yr), month=int(mon), day=int(day), hour=int(hr), minute=int(min))
     stop = begin + timedelta(hours=float(length))
     begin = begin.strftime("%Y-%m-%d %H:%M:%S.%f")
     stop = stop.strftime("%Y-%m-%d %H:%M:%S.%f")
