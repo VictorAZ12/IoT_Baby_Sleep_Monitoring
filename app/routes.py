@@ -93,6 +93,23 @@ def report(yr, mon, day, hr, min, length):
     messages.append(average_humidity)
     average_temp = int(temp_count / num_records)
     messages.append(average_temp)
+    sleep_quality = 0
+    sleep_quality += 1 - sound_ratio
+    sleep_quality += 1 - motion_ratio
+    if average_humidity < 30:
+        sleep_quality += 1 / (30 - average_humidity)
+    elif average_humidity > 50:
+        sleep_quality += 1 / (average_humidity - 50)
+    else:
+        sleep_quality += 1
+    if average_temp < 20:
+        sleep_quality += 1 / (20 - average_temp)
+    elif average_temp > 22:
+        sleep_quality += 1 / (average_temp - 22)
+    else:
+        sleep_quality += 1
+    sleep_quality = int((sleep_quality / 4) * 100)
+    messages.append(sleep_quality)
     return render_template('report.html', data=data, dates=[begin[0:19], stop[0:19]], messages=messages)
 
 '''
