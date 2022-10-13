@@ -49,7 +49,11 @@ def update(sound, movement, humidity, temperature, device_id):
     Updates 'record' table with a new data point and redirects to dashboard.
     e.g 127.0.0.1:5000/update/50/1/80/20/Arduino1
     """
-    if device_id in DEVICES:
+    if (device_id in DEVICES and \
+        float(humidity) <= 80 and float(humidity) >= 20 and \
+        float(temperature) <= 50 and float(temperature) >= 0 and \
+        (int(sound) == 1 or int(sound) == 0) and \
+        (int(movement) == 1 or int(movement) == 0) ):
         data = [(sound, movement, humidity, temperature, device_id)]
         iotDB.insert_record('iotDB.db', data)
         return redirect("/dashboard")
