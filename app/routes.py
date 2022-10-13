@@ -111,18 +111,3 @@ def report(yr, mon, day, hr, min, length):
     sleep_quality = int((sleep_quality / 4) * 100)
     messages.append(sleep_quality)
     return render_template('report.html', data=data, dates=[begin[0:19], stop[0:19]], messages=messages)
-
-'''
-def dashboard():
-    """
-    Displays the record data the specified period of time.
-    """
-    
-    now = datetime.now(tz=TIMEZONE)
-    past = now - timedelta(hours=12)
-    now = now.strftime("%Y-%m-%d %H:%M:%S.%f")
-    past = past.strftime("%Y-%m-%d %H:%M:%S.%f")
-    data = iotDB.select_range('iotDB.db', start=past, end=now, mode=1)
-
-    return render_template('dashboard.html', data=data)
-'''
