@@ -5,6 +5,9 @@ from datetime import datetime
 from datetime import timedelta
 from app.config import TIMEZONE
 from app.config import DEVICES
+from flask_cors import CORS
+
+CORS(app, supports_credentials=True, resources=r'/*')
 
 @app.route('/')
 @app.route('/index')
@@ -20,6 +23,7 @@ def dashboard():
     Displays the 20 most recent record of data for the dashboard page.
     """
     records = iotDB.select_latest('iotDB.db', 20, 1)
+    records = records[::-1]
     data = []
     for record in records:
         data.append(
