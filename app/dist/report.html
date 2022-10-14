@@ -37,30 +37,5 @@
     </div>        
 </div>
 
-<div>
-    <table style="width:100%">
-        <tr>
-            <td>record_id</td>
-            <td>time</td>
-            <td>sound</td>
-            <td>movement</td>
-            <td>humidity</td>
-            <td>temperature</td>
-            <td>device_id</td>
-        </tr>
-        {% for record in data %}
-        <tr>
-            <td>{{ record[0] }}</td>
-            <td>{{ record[1] }}</td>
-            <td>{{ record[2] }}</td>
-            <td>{{ record[3] }}</td>
-            <td>{{ record[4] }}</td>
-            <td>{{ record[5] }}</td>
-            <td>{{ record[6] }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-</div>
-
 </body>
 </html>
