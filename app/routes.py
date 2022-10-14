@@ -19,16 +19,6 @@ def dashboard():
     """
     Displays the most recent record of data for the dashboard page.
     """
-    '''
-    records = iotDB.select_latest('iotDB.db', 1, 1)
-    data = {
-        "time": records[0][1][11:19],
-        "sound": records[0][2],
-        "movement": records[0][3],
-        "humidity": records[0][4],
-        "temperature": records[0][5]
-    }
-    '''
     records = iotDB.select_latest('iotDB.db', 20, 1)
     data = []
     for record in records:
@@ -90,13 +80,13 @@ def report(yr, mon, day, hr, min, length):
         humidity_count += int(record[4])
         temp_count += int(record[5])
     sound_ratio = round(sound_count / num_records, 2)
-    messages.append(sound_ratio)
+    #messages.append(sound_ratio)
     motion_ratio = round(motion_count / num_records, 2)
-    messages.append(motion_ratio)
+    #messages.append(motion_ratio)
     average_humidity = int(humidity_count / num_records)
-    messages.append(average_humidity)
+    #messages.append(average_humidity)
     average_temp = int(temp_count / num_records)
-    messages.append(average_temp)
+    #messages.append(average_temp)
     sleep_quality = 0
     sleep_quality += 1 - sound_ratio
     sleep_quality += 1 - motion_ratio
@@ -113,5 +103,32 @@ def report(yr, mon, day, hr, min, length):
     else:
         sleep_quality += 1
     sleep_quality = int((sleep_quality / 4) * 100)
-    messages.append(sleep_quality)
+    messages.extend([sound_ratio, motion_ratio, average_humidity, average_temp, sleep_quality])
+    # messages.append(sleep_quality)
     return render_template('report.html', dates=[begin[0:19], stop[0:19]], messages=messages)
+
+
+def dashboard_v2():
+    """
+    UNFINISHED.
+    """
+    # records = iotDB.select_latest('iotDB.db', 20, 1)
+    now = datetime.now(tz=TIMEZONE)
+    past = now - timedelta(hours=1)
+    now = now.strftime("%Y-%m-%d %H:%M:%S.%f")
+    past = past.strftime("%Y-%m-%d %H:%M:%S.%f")
+    records = iotDB.select_range('iotDB.db', start=past, end=now, mode=1)
+    data = []
+    counter = 1
+    for record in records:
+        if counter % 36 == 0 or counter == 1:
+            data_element = {
+                    "time": record[1][11:19],
+                    "sound": record[2],
+                    "movement": record[3],
+                    "humidity": record[4],
+                    "temperature": record[5]
+            }
+        data.append(data_element)
+        counter += 1
+    return jsonify(data)
