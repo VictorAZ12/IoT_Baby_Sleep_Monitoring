@@ -10,37 +10,37 @@ from app.config import DEVICES
 @app.route('/index')
 def index():
     """
-    Displays a welcome message and button to navigate to the dashboard.
+    Displays the dashboard.
     """
     return render_template('index.html')
 
 @app.route('/dashboard')
 def dashboard():
     """
-    Displays the record data the specified period of time.
+    Displays the most recent record of data for the dashboard page.
     """
+    '''
     records = iotDB.select_latest('iotDB.db', 1, 1)
     data = {
-        "time": records[0][1],
+        "time": records[0][1][11:19],
         "sound": records[0][2],
         "movement": records[0][3],
         "humidity": records[0][4],
         "temperature": records[0][5]
     }
     '''
-    records = iotDB.select_latest('iotDB.db', 10, 1)
+    records = iotDB.select_latest('iotDB.db', 20, 1)
     data = []
     for record in records:
         data.append(
             {
-                "time": record[1],
+                "time": record[1][11:19],
                 "sound": record[2],
                 "movement": record[3],
                 "humidity": record[4],
                 "temperature": record[5]
             }
         )
-    '''
     return jsonify(data)
 
 @app.route('/update/<sound>/<movement>/<humidity>/<temperature>/<device_id>')
@@ -114,4 +114,4 @@ def report(yr, mon, day, hr, min, length):
         sleep_quality += 1
     sleep_quality = int((sleep_quality / 4) * 100)
     messages.append(sleep_quality)
-    return render_template('report.html', data=data, dates=[begin[0:19], stop[0:19]], messages=messages)
+    return render_template('report.html', dates=[begin[0:19], stop[0:19]], messages=messages)

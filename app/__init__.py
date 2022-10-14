@@ -15,7 +15,7 @@ from app import routes
 from app import iotDB
 iotDB.init_db("iotDB.db")
 
-fileName = "arduino.pyw"
+fileName = "arduino.py"
 if sys.platform == "win32":
     os.startfile(fileName)
 else:
