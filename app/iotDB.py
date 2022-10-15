@@ -131,13 +131,3 @@ def select_range(database, start, end, mode):
         return select_named(database, query)
     else:
         return select_unnamed(database, query)
-
-def format_raw(rawdata):
-    """
-    Format the raw data received from the device.
-    Rawdata: a string like "<name>,<temp>,<humidity>,<sound>,<movement>"
-    Returns a list of a tuple like (sound, movement, humidity, temperature, deviceName)
-    """
-    rawdata = rawdata.split(',')
-    data = [(int(rawdata[3]), int(rawdata[4]), float(rawdata[2]), float(rawdata[1]), rawdata[0])]
-    return data
