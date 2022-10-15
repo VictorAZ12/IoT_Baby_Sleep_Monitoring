@@ -1,6 +1,5 @@
 import sqlite3
 import os
-import json
 import datetime
 from app.config import TIMEZONE
 
