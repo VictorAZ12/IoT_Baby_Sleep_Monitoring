@@ -134,7 +134,6 @@ def select_range(database, start, end, mode):
     else:
         return select_unnamed(database, query)
 
-
 def longest_1(record):
     """
     Analyse a 0/1 string to find the longest substring composed of 1, returns the start index and the length.
@@ -232,11 +231,3 @@ def format_raw(rawdata):
     rawdata = rawdata.split(',')
     data = [(int(rawdata[3]), int(rawdata[4]), float(rawdata[2]), float(rawdata[1]), rawdata[0])]
     return data
-
-
-
-# sample json dumping
-'''
-with open('testdata.json','w',encoding='utf-8') as f:
-    json.dump(result, f, ensure_ascii=False, indent=4)
-#'''
