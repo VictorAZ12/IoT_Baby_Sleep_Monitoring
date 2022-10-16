@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">    
-<title>show temp</title>
+<title>Dashboard</title>
 
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -17,16 +17,43 @@
 
 </head>
 
-<body>
+<style>
+    table, th, td {
+        border:1px solid black;
+    }
+</style>
 
+<body>
 <div class="container-fluid">
     <div class="jumbotron">
         <hr class="my-4">
-        <h1 class="display-4"> Sound = {{ data['sound'] }}, Movement = {{ data['movement'] }}, Humidity = {{ data['humidity'] }}, Temp = {{ data['temperature'] }} </h1>
-        <p class="lead">Most recent data from baby's room</p>
+        <h1 class="display-4"> Sleep Monitor Dashboard </h1>
         <hr class="my-4">
     </div>        
 </div>
-
+<div>
+    <table style="width:100%">
+        <tr>
+            <td>record_id</td>
+            <td>time</td>
+            <td>sound</td>
+            <td>movement</td>
+            <td>humidity</td>
+            <td>temperature</td>
+            <td>device_id</td>
+        </tr>
+        {% for record in data %}
+        <tr>
+            <td>{{ record[0] }}</td>
+            <td>{{ record[1] }}</td>
+            <td>{{ record[2] }}</td>
+            <td>{{ record[3] }}</td>
+            <td>{{ record[4] }}</td>
+            <td>{{ record[5] }}</td>
+            <td>{{ record[6] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
 </body>
 </html>
