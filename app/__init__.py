@@ -4,4 +4,4 @@ app = Flask(__name__)
 
 from app import routes
 from app import iotDB
-iotDB.initDB("iotDB.db")
+iotDB.init_db("iotDB.db")
